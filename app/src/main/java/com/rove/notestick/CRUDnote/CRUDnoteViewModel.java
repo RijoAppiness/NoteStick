@@ -24,6 +24,7 @@ import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 
 public class CRUDnoteViewModel extends AndroidViewModel {
 
@@ -34,6 +35,8 @@ public class CRUDnoteViewModel extends AndroidViewModel {
     private LiveData<Entity_Note> currentNote;
     private ImageSaver imageSaver;
     private Application mApplication;
+    private LiveData<Long> noteID;
+    private MutableLiveData<Entity_Note> noteTobeSaved;
     private JsonViewModem.ViewContainer<TextImageLayout> viewContainer;
 
 
@@ -45,10 +48,12 @@ public class CRUDnoteViewModel extends AndroidViewModel {
         imageSaver.setDirectoryName(application.getApplicationContext().getString(R.string.Image_Directory_Name));
         imageSaver.setExternal(false);
         jsonViewModem = new StringImageJsonViewModem(application.getApplicationContext(), imageSaver);
+        noteID = new MutableLiveData<>();
+        noteTobeSaved = new MutableLiveData<>();
+        noteID = Transformations.switchMap(noteTobeSaved,noteToSave->noteRepository.saveNote(noteToSave));
     }
 
-    public MutableLiveData<Long> saveCurrentNote(Entity_Note note) throws ExecutionException, InterruptedException {
-        MutableLiveData<Long> retValue = new MutableLiveData<>();
+    public void saveCurrentNote(Entity_Note note) throws ExecutionException, InterruptedException {
         if (viewContainer == null)
             throw new RuntimeException("Set viewContainer first, before calling saveCurren" +
                     "tNote()");
@@ -77,11 +82,10 @@ public class CRUDnoteViewModel extends AndroidViewModel {
 
                 noteRepository.editNote(note);
             } else {
-                retValue = noteRepository.saveNote(note);
+                noteTobeSaved.setValue(note);
             }
             currentNote = noteRepository.getNoteByIDLiveData(note.NoteId);
         }
-        return retValue;
     }
 
     public LiveData<Entity_Note> getCurrentNote() {
@@ -134,4 +138,12 @@ public class CRUDnoteViewModel extends AndroidViewModel {
         noteRepository.deleteNote(note);
     }
 
+    public LiveData<Long> getObsevableNoteID() {
+        return noteID;
+    }
+    public void resetNoteid(){
+        noteID = new MutableLiveData<>();
+        noteRepository.resetNoteid();
+        noteID = Transformations.switchMap(noteTobeSaved,noteToSave->noteRepository.saveNote(noteToSave));
+    }
 }

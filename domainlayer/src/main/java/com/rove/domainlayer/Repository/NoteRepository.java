@@ -4,6 +4,7 @@ package com.rove.domainlayer.Repository;
 import android.app.Application;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import com.rove.datalayer.Data.*;
 import com.rove.datalayer.Data.Entity_Note;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.room.Room;
 
 import com.rove.datalayer.Data.DatabaseInteractor;
@@ -34,6 +36,9 @@ public class NoteRepository {
     public NoteRepository(Application application) {
         databaseInteractor = getDatabaseInstance(application);
 
+    }
+    public void resetNoteid(){
+        inserted_noteID = new MutableLiveData<>();
     }
 
     public MediatorLiveData<List<Entity_Note>> getNotesByDateAndQuery() {
@@ -67,6 +72,7 @@ public class NoteRepository {
     }
 
     public MutableLiveData<Long> saveNote(Entity_Note note) {
+        Log.d("=>",note.toString());
         new Task_SaveNote(databaseInteractor).execute(note);
         return inserted_noteID;
 
@@ -105,14 +111,19 @@ public class NoteRepository {
 
 
     private static class Task_SaveNote extends AsyncTask<Entity_Note, Void, Void> {
+        private DatabaseInteractor databaseInteractor;
+
         public Task_SaveNote(DatabaseInteractor databaseInteractor) {
             this.databaseInteractor = databaseInteractor;
         }
 
-        private DatabaseInteractor databaseInteractor;
+
 
         @Override
         protected Void doInBackground(Entity_Note... entity_notes) {
+
+            Log.d("=> savds",entity_notes[0].toString());
+
             long noteId = databaseInteractor.getDao().insertNote(entity_notes[0]);
             inserted_noteID.postValue(noteId);
             return null;

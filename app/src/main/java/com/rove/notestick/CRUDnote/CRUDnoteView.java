@@ -189,6 +189,13 @@ public class CRUDnoteView extends AppCompatActivity {
 
             }
         });
+        mViewModel.resetNoteid();
+        mViewModel.getObsevableNoteID().observe(this, new Observer<Long>() {
+            @Override
+            public void onChanged(Long noteID) {
+                note.NoteId = (int) (long) noteID;
+            }
+        });
 
         addStickermenu.inflate(R.menu.crud_menu_sticker_options);
         addStickermenu.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
@@ -417,12 +424,7 @@ public class CRUDnoteView extends AppCompatActivity {
             note.setDate(date);
         }
         try {
-            mViewModel.saveCurrentNote(note).observe(lifecycleOwner, new Observer<Long>() {
-                @Override
-                public void onChanged(Long noteid) {
-                    note.NoteId = (int) (long) noteid;
-                }
-            });
+            mViewModel.saveCurrentNote(note);
             Snackbar.make(rootLayout, R.string.Save_snackbar_msg, Snackbar.LENGTH_SHORT).show();
         } catch (ExecutionException e) {
             e.printStackTrace();

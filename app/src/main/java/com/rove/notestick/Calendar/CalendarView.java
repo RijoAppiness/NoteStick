@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,13 +57,11 @@ public class CalendarView extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(CalendarViewModel.class);
 
-        mViewModel.getRelavantDates().observe(this, new Observer<List<Date>>() {
-            @Override
-            public void onChanged(List<Date> dates) {
-                markInCalendar(dates);
-                relevantDates = dates;
-            }
+        mViewModel.getRelavantDates().observe(this, dates -> {
+            markInCalendar(dates);
+            relevantDates = dates;
         });
+
         appCalender = getActivity().findViewById(R.id.calendar);
         try {
             appCalender.setDate(Calendar.getInstance());
@@ -84,22 +83,19 @@ public class CalendarView extends Fragment {
             }
         });
         fragmentManager = getFragmentManager();
-
-        mViewModel.getNotesOnDate().observe(this, new Observer<List<Entity_Note>>() {
-            @Override
-            public void onChanged(List<Entity_Note> entity_notes) {
-                if (entity_notes.size() > 1) {
-                    NoteSelectionFrag noteSelectionFrag = new NoteSelectionFrag(entity_notes);
-                    noteSelectionFrag.show(fragmentManager, getString(R.string.ChoseNoteDialogTitle));
-                } else {
-                    try {
-                        if (entity_notes.size() == 1)
-                            showNoteEditorOnViewNoteMode(entity_notes.get(0).NoteId);
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        mViewModel.getNotesOnDate().observe(this, entity_notes -> {
+            Log.d("=>","notesOnDate returned with count: "+ entity_notes.size());
+            if (entity_notes.size() > 1) {
+                NoteSelectionFrag noteSelectionFrag = new NoteSelectionFrag(entity_notes);
+                noteSelectionFrag.show(fragmentManager, getString(R.string.ChoseNoteDialogTitle));
+            } else {
+                try {
+                    if (entity_notes.size() == 1)
+                        showNoteEditorOnViewNoteMode(entity_notes.get(0).NoteId);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -146,5 +142,26 @@ public class CalendarView extends Fragment {
        return true;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+//        mViewModel.resetData();
+//        mViewModel.getNotesOnDate().observe(this, entity_notes -> {
+//            Log.d("=>","notesOnDate returned with count: "+String.valueOf(entity_notes.size()));
+//            if (entity_notes.size() > 1) {
+//                NoteSelectionFrag noteSelectionFrag = new NoteSelectionFrag(entity_notes);
+//                noteSelectionFrag.show(fragmentManager, getString(R.string.ChoseNoteDialogTitle));
+//            } else {
+//                try {
+//                    if (entity_notes.size() == 1)
+//                        showNoteEditorOnViewNoteMode(entity_notes.get(0).NoteId);
+//                } catch (ExecutionException e) {
+//                    e.printStackTrace();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
+    }
 }

@@ -92,4 +92,15 @@ public class Entity_Note implements Parcelable {
         parcel.writeString(Content);
         parcel.writeString(ImgUrl);
     }
+
+    @Override
+    public String toString() {
+        return "Entity_Note{" +
+                "NoteId=" + NoteId +
+                ", Date=" + Date +
+                ", Title='" + Title + '\'' +
+                ", Content='" + Content + '\'' +
+                ", ImgUrl='" + ImgUrl + '\'' +
+                '}';
+    }
 }
